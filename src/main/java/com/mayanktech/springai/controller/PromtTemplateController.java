@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-public class ChatController {
-
+public class PromtTemplateController {
     private static final String SYSTEM_MESSAGE = """
             You are a Internal IT and provide
             Question Answer to IT policies. Be concise. If you don't know the answer,
@@ -21,13 +20,13 @@ public class ChatController {
     private final ChatClient gemmaChatClient;
     private final ChatClient mistralChatClient;
 
-    public ChatController(@Qualifier("gemmaChatClient") ChatClient gemmaChatClient,
+    public PromtTemplateController(@Qualifier("gemmaChatClient") ChatClient gemmaChatClient,
             @Qualifier("mistralChatClient") ChatClient mistralChatClient) {
         this.gemmaChatClient = gemmaChatClient;
         this.mistralChatClient = mistralChatClient;
     }
 
-    @GetMapping("/chat")
+    @GetMapping("/email")
     public String chat(@RequestParam("message") String message,
             @RequestParam(value = "model", required = false) String model) {
         ChatClient selectedClient;
@@ -46,5 +45,4 @@ public class ChatController {
                 .user(message)
                 .call().content();
     }
-
 }
