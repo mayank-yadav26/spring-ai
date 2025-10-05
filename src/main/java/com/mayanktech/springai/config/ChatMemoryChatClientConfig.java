@@ -15,13 +15,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.mayanktech.springai.advisors.TokenUsageAuditAdvisor;
+import com.mayanktech.springai.rag.PIIMaskingDocumentPostProcessor;
 
 @Configuration
 public class ChatMemoryChatClientConfig {
 
     @Bean("chatMemoryChatClient")
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory
-//     ,RetrievalAugmentationAdvisor  retrievalAugmentationAdvisor
+    ,RetrievalAugmentationAdvisor  retrievalAugmentationAdvisor
     ) {
         Advisor loggerAdvisor = new SimpleLoggerAdvisor();
         Advisor tokenUsageAdvisor = new TokenUsageAuditAdvisor();
@@ -30,22 +31,22 @@ public class ChatMemoryChatClientConfig {
         options.setModel("gemma3:4b");
         return chatClientBuilder
                 .defaultAdvisors(List.of(loggerAdvisor, memoryAdvisor,tokenUsageAdvisor
-                        // ,retrievalAugmentationAdvisor
+                        ,retrievalAugmentationAdvisor
                         ))
                 .defaultOptions(options)
                 .build();
     }
 
-//     @Bean
-//     RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(VectorStore vectorStore,
-//             ChatClient.Builder chatClientBuilder) {
-//         return RetrievalAugmentationAdvisor.builder()
-//                 .queryTransformers(TranslationQueryTransformer.builder()
-//                         .chatClientBuilder(chatClientBuilder.clone())
-//                         .targetLanguage("english").build())
-//                 .documentRetriever(VectorStoreDocumentRetriever.builder().vectorStore(vectorStore)
-//                         .topK(3).similarityThreshold(0.5).build())
-//                 //.documentPostProcessors(PIIMaskingDocumentPostProcessor.builder())
-//                 .build();
-//     }
+    @Bean
+    RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(VectorStore vectorStore,
+            ChatClient.Builder chatClientBuilder) {
+        return RetrievalAugmentationAdvisor.builder()
+                .queryTransformers(TranslationQueryTransformer.builder()
+                        .chatClientBuilder(chatClientBuilder.clone())
+                        .targetLanguage("english").build())
+                .documentRetriever(VectorStoreDocumentRetriever.builder().vectorStore(vectorStore)
+                        .topK(3).similarityThreshold(0.5).build())
+                .documentPostProcessors(PIIMaskingDocumentPostProcessor.builder()) // Masking of sensitive info
+                .build();
+    }
 }
