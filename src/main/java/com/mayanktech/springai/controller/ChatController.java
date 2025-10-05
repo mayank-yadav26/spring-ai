@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
 @RestController
 @RequestMapping("/api")
@@ -29,7 +30,7 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String chat(@RequestParam("message") String message,
-            @RequestParam(value = "model", required = false) String model) {
+            @RequestParam(value = "model", required = false) String model, @RequestParam("username") String username) {
         ChatClient selectedClient;
 
         // Use gemma model if 'gemma' is mentioned in the model parameter
@@ -44,6 +45,9 @@ public class ChatController {
         return selectedClient.prompt()
                 .system(SYSTEM_MESSAGE)
                 .user(message)
+                .advisors(
+                    advisorSpec -> advisorSpec.param(CONVERSATION_ID, username)
+                )
                 .call().content();
     }
 
